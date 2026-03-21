@@ -1,14 +1,16 @@
-from itertools import product
-
-from django.http import HttpResponse
 from django.shortcuts import render
-from django.db.models import Q, F
-from django.db.models.aggregates import Count, Min, Max, Avg, Sum
-from django.core.exceptions import ObjectDoesNotExist
-from store.models import Product, OrderItem, Order
+from django.contrib.contenttypes.models import ContentType
+from store.models import Product
+from tags.models import TaggedItem
 
 
 
 def say_hello(request):
-    result = Product.objects.aggregate(Count('id'))
-    return render(request, 'hello.html', {'result': result})
+    content_type=ContentType.objects.get_for_model(Product)
+    queryset = TaggedItem.objects\
+        .select_related('tag')\
+        .filter(
+            content_type= content_type,
+            object_id = 1
+            )
+    return render(request, 'hello.html', {'tags': list(queryset)})
