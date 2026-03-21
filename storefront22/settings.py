@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'storefront22.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'storefront22',
+        'NAME': 'storefront',
         'HOST':'localhost',
         'USER':'root',
         'PASSWORD': '1323'
