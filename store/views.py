@@ -1,32 +1,48 @@
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
-from  rest_framework.decorators import api_view
-from  rest_framework.response import Response
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.mixins import ListModelMixin, CreateModelMixin
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from rest_framework import status
-from .models import Product
-from .serializers import ProductSerializer
+from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
+from .models import Collection, OrderItem, Product
+from .serializers import ProductSerializer, CollectionSerializer, ReviewSerializer
+from django.db.models import Count
 
-@api_view(['GET','POST'])
-def product_list(request):
-    if request.method == 'GET':
-        queryset = Product.objects.select_related('collection').all()
-        serialzier = ProductSerializer(
-            queryset, many = True, context = {'request':request})
-        return Response(serialzier.data)
-    elif request.method == 'POST':
-        serialzier = ProductSerializer(data = request.data)
-        serialzier.is_valid(raise_exception=True)
-        serialzier.validated_data
-        return Response('ok')
+class ProductViewSet(ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+    def get_serializer_context(self):
+        return {'request':self.request}
+    
+    def  destroy(self, request, *args, **kwargs):
+        if OrderItem.objects.filter(product_id=kwargs['pk']).count()>0:
+            return Response({'error':'product cannot  be  delete '
+        'bacause it is  associated with order item.'},
+        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        return super().destroy(request,*self.args,**kwargs)
     
 
 
-@api_view()
-def  product_detail(request,  id):
-    product = get_object_or_404(Product, pk =id)
-    serializer = ProductSerializer(product)
-    return Response(serializer.data)
 
-@api_view()
-def collection_detail(request, pk):
-    return Response('ok')
+class CollectionViewSet(ModelViewSet):
+    queryset = Collection.objects.annotate(
+        products_count=Count('products')).all()
+    serializer_class = CollectionSerializer
+    
+    def destroy(self, request, *args, **kwargs):
+        if Product.objects.filter(collection_id=kwargs['pk']).count()>0:
+            return Response({'error':'Collection cannot be delete '
+        'bacause it is  associated with one or more products.'},
+        status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        return super().destroy(request,*self.args,**kwargs)
+
+class  ReviewViewSet(ModelViewSet):
+    queryset = Review.objects.all()
+    serelizer_class = ReviewSerializer
+
