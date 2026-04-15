@@ -1,16 +1,21 @@
 from django.db.models.aggregates import Count
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from  rest_framework.decorators import action
 from rest_framework.filters  import SearchFilter, OrderingFilter
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.mixins import DestroyModelMixin, ListModelMixin, CreateModelMixin, RetrieveModelMixin,  UpdateModelMixin
+from rest_framework.permissions import AllowAny, DjangoModelPermissions, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework import status
+
+from core import serializers
+from store.permissions import FullDjangoModelPermissions, IsAdminOrReadyOnly, ViewCustomerHistoryPermission
 from .pagination import DefaultPagination
 from .filters import ProductFilter
-from .models import Cart, CartItem, Collection, OrderItem, Product, Review, Customer
-from .serializers import UpdateCartItemSerializer,AddCartItemSerializer, CartItemSerializer, CartSerializer, ProductSerializer, CollectionSerializer, ReviewSerializer, CustomerSerilaizer
+from .models import Cart, CartItem, Collection, Order, OrderItem, Product, Review, Customer
+from .serializers import CreateOrderSerializer, OrderSerializier, UpdateCartItemSerializer,AddCartItemSerializer, CartItemSerializer, CartSerializer, ProductSerializer, CollectionSerializer, ReviewSerializer, CustomerSerilaizer
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
@@ -18,6 +23,7 @@ class ProductViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ProductFilter
     pagination_class = DefaultPagination
+    permission_classes = [IsAdminOrReadyOnly]
     search_fields =['title', 'description']
     ordering_fields = ['unit_price', 'last_update']
 
@@ -39,6 +45,7 @@ class CollectionViewSet(ModelViewSet):
     queryset = Collection.objects.annotate(
         products_count=Count('products')).all()
     serializer_class = CollectionSerializer
+    permission_classes = [IsAdminOrReadyOnly]
     
     def destroy(self, request, *args, **kwargs):
         if Product.objects.filter(collection_id=kwargs['pk']).count()>0:
@@ -85,7 +92,58 @@ class ClassItemViewSet(ModelViewSet):
             .select_related('product')
     
 
-class  CustomerViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
+class  CustomerViewSet(ModelViewSet):
     queryset  = Customer.objects.all()
-    seralizer_class = CustomerSerilaizer
+    serializer_class = CustomerSerilaizer
+    permission_classes = [IsAdminUser]
 
+    @action(detail=True, permission_classes =[ViewCustomerHistoryPermission])
+    def history(self, request, pk):
+        return Response('ok')
+
+
+    @action(detail=False, methods=['GET','PUT'], permission_classes = [IsAuthenticated])
+    def me(self, request):
+        (customer, created) = Customer.objects.get_or_create(
+            user_id = request.user.id)
+        if request.method == 'GET':
+            serializer = CustomerSerilaizer(customer)
+            return Response(serializer.data)
+        elif request.method == 'PUT':
+            serializer = CustomerSerilaizer(customer, data = request.data)
+            serializer.is_valid(raise_exception= True)
+            serializer.save()
+            return Response(serializer.data)
+    
+    
+class OrderViewSet(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = CreateOrderSerializer(
+            data = request.data,
+            context = {'user_id':self.request.user.id} )
+        serializer.is_valid(raise_exception= True)
+        order = serializer.save()
+        serializer = OrderSerializier(order)
+        return Response(serializer.data)
+
+    def get_serializer_class(self):
+        if  self.request.method == 'POST':
+            return CreateOrderSerializer
+        return OrderSerializier
+    
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.is_staff:
+            return Order.objects.all()
+        
+        (customer_id,created) = Customer.objects.only('id').get_or_create(user_id = self.request.user.id)
+        return Order.objects.filter(customer_id = customer_id )
+    
+
+    
+
+    
