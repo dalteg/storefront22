@@ -14,8 +14,8 @@ from core import serializers
 from store.permissions import FullDjangoModelPermissions, IsAdminOrReadyOnly, ViewCustomerHistoryPermission
 from .pagination import DefaultPagination
 from .filters import ProductFilter
-from .models import Cart, CartItem, Collection, Order, OrderItem, Product, Review, Customer
-from .serializers import CreateOrderSerializer, OrderSerializier, UpdateCartItemSerializer,AddCartItemSerializer, CartItemSerializer, CartSerializer, ProductSerializer, CollectionSerializer, ReviewSerializer, CustomerSerilaizer, UpdateOrderSerializer
+from .models import Cart, CartItem, Collection, Order, OrderItem, Product, ProductImage, Review, Customer
+from .serializers import CreateOrderSerializer, OrderSerializier, ProductImageSerializer, UpdateCartItemSerializer,AddCartItemSerializer, CartItemSerializer, CartSerializer, ProductSerializer, CollectionSerializer, ReviewSerializer, CustomerSerilaizer, UpdateOrderSerializer
 
 class ProductViewSet(ModelViewSet):
     queryset = Product.objects.all()
@@ -151,8 +151,14 @@ class OrderViewSet(ModelViewSet):
         
         customer_id = Customer.objects.only('id').get(user_id = self.request.user.id)
         return Order.objects.filter(customer_id = customer_id )
-    
 
-    
 
+class ProductImageViewSet(ModelViewSet):
+    serializer_class = ProductImageSerializer
+
+    def get_serializer_context(self):
+        return {'product_id': self.kwargs['product_pk']}
+
+    def get_queryset(self):
+        return ProductImage.objects.filter(product_id = self.kwargs['product_pk'])
     
