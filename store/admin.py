@@ -18,6 +18,18 @@ class InventoryFilter(admin.SimpleListFilter):
             return queryset.filter(inventory__lt=10)
         
 
+class ProductImageInline(admin.TabularInline):
+    model = models.ProductImage
+    readonly_fields = ['thumbnail']
+
+    
+    def thumbnail(self, instance):
+        if instance.image:
+            return format_html(
+                '<img src="{}" class="thumbnail" />',
+                instance.image.url
+            )
+        return ''
 
 
 @admin.register(models.Product) #register decorator shorter way instead of using admin.site.register(models.Collection)
@@ -28,6 +40,7 @@ class ProductAdmin(admin.ModelAdmin):
         'slug':['title']
     }
     actions = ['Clear inventory']
+    inlines = [ProductImageInline]
     list_display = ['title','unit_price', 'inventory_status',  'collection_title']
     list_editable = ['unit_price']
     list_filter = ['collection', 'updated_at', InventoryFilter]
@@ -48,10 +61,14 @@ class ProductAdmin(admin.ModelAdmin):
         updated_count =queryset.update(inventory = 0)
         self.message_user(
             request,
-            f'{updated_count}products were successfully updated.'
+            f'{updated_count} products were successfully updated.',
+            messages.ERROR
         )
 
-    messages.ERROR
+    class Media:
+        css = {
+            'all': ['store/sytles.css']
+        }
 
 
 # Register your models here.
