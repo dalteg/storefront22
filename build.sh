@@ -1,6 +1,5 @@
-services:
-  - type: web
-    name: storefront22
-    env: python
-    buildCommand: "./build.sh"
-    startCommand: "gunicorn storefront22.wsgi:application"
+#!/usr/bin/env bash
+
+pip install -r requirements.txt
+python manage.py collectstatic --noinput
+python manage.py migrate
