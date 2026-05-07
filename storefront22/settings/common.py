@@ -16,19 +16,12 @@ from celery.schedules import crontab
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-^#jui1_5vbjac648#7j(21^k0us9-!^9md#=k&c_ktk(^n*sem'
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
-
-ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -57,6 +50,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -66,8 +60,7 @@ MIDDLEWARE = [
 
 ]
 
-#if  DEBUG:
-#    MIDDLEWARE += ['silk.middleware.SilkyMiddleware']
+
 
 
 INTERNAL_IPS = [
@@ -102,18 +95,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'storefront22.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'storefront',
-        'HOST':'localhost',
-        'USER':'root',
-        'PASSWORD': '1323'
-    }
-}
 
 
 # Password validation
@@ -151,6 +133,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -209,6 +192,33 @@ CACHES = {
         "TIMEOUT":10*60,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+LOGGING =  {
+    'version':1,
+    'disable_existing_loggers':False,
+    'handlers':{
+        'console':{
+            'class':'logging.StreamHandler'
+        },
+        'file':{
+            'class':'logging.FileHandler',
+            'filename':'general.log',
+            'formatter':'verbose'
+        }
+    },
+    'loggers':{
+        '':{
+            'handlers':['console','file'],
+            'level':os.environ.get('DJANGO_LOG_LEVEL', 'INFO')
+        }
+    },
+    'formatters' :{
+        'verbose':{
+            'format':'{asctime}({levelname})-{name}-{message}',
+            'style':'{'
         }
     }
 }

@@ -5,6 +5,9 @@ venv/
 # Python cache
 __pycache__/
 *.pyc
+/media/
+/static/
+general.log
 
 # Database
 db.sqlite3
