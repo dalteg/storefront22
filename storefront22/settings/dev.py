@@ -17,3 +17,4 @@ DATABASES = {
         'PASSWORD': '1323'
     }
 }
+
