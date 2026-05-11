@@ -8,7 +8,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 ALLOWED_HOSTS = ['*']
 
-# Database — reads DATABASE_URL env var set in Render dashboard
+# Database
 DATABASES = {
     'default': dj_database_url.config(
         default=os.environ.get('DATABASE_URL'),
@@ -16,8 +16,7 @@ DATABASES = {
     )
 }
 
-
-# Redis — reads REDIS_URL env var set in Render dashboard
+# Redis
 REDIS_URL = os.environ.get('REDIS_URL', 'redis://localhost:6379')
 
 CELERY_BROKER_URL = REDIS_URL + '/1'
@@ -33,6 +32,15 @@ CACHES = {
     }
 }
 
-# Silk profiler — disable in prod or it eats DB space
 SILKY_PYTHON_PROFILER = False
 
+# Disable debug-only apps in production
+INSTALLED_APPS = [app for app in INSTALLED_APPS if app not in [
+    'debug_toolbar',
+    'silk',
+]]
+
+MIDDLEWARE = [m for m in MIDDLEWARE if m not in [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'silk.middleware.SilkyMiddleware',
+]]
