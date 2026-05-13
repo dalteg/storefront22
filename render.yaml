@@ -3,5 +3,5 @@ services:
     name: storefront22
     env: python
     buildCommand: "./build.sh"
-    releaseCommand: "python manage.py migrate"
+    releaseCommand: "python manage.py migrate --settings=storefront22.settings.prod"
     startCommand: "gunicorn storefront22.wsgi:application"
