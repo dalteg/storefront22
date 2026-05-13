@@ -30,9 +30,14 @@ class Migration(migrations.Migration):
             name='last_name',
         ),
         migrations.AddField(
-            model_name='customer',
-            name='user',
-            field=models.OneToOneField(default=1, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
-            preserve_default=False,
+        model_name='customer',
+        name='user',
+        field=models.OneToOneField(
+            null=True,  # add this
+            blank=True,  # add this
+            on_delete=django.db.models.deletion.CASCADE,
+            to=settings.AUTH_USER_MODEL
         ),
+        preserve_default=False,
+),
     ]
