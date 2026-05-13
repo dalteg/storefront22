@@ -8,13 +8,27 @@ class Command(BaseCommand):
     help = 'Populates the database with collections and products'
 
     def handle(self, *args, **options):
-        print('Populating the database...')
+        print('Clearing existing data...')
+        with connection.cursor() as cursor:
+            cursor.execute('''
+                TRUNCATE TABLE
+                    store_orderitem,
+                    store_order,
+                    store_cartitem,
+                    store_cart,
+                    store_review,
+                    store_productimage,
+                    store_product,
+                    store_collection
+                RESTART IDENTITY CASCADE;
+            ''')
+
+        print('Seeding database...')
         current_dir = os.path.dirname(__file__)
         file_path = os.path.join(current_dir, 'seed.sql')
         sql = Path(file_path).read_text()
 
         with connection.cursor() as cursor:
-            cursor.execute('TRUNCATE store_orderitem, store_order, store_cartitem, store_cart, store_product, store_collection RESTART IDENTITY CASCADE;')
             cursor.execute(sql)
-        
-        print('Done!')
+
+        print('Done! Database seeded successfully.')
