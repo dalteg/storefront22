@@ -19,7 +19,7 @@ insert into
     description,
     unit_price,
     inventory,
-    last_update,
+    updated_at,
     collection_id,
     slug
   )
