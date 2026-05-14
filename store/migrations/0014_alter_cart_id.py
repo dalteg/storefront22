@@ -1,5 +1,7 @@
 import uuid
+import django.utils.timezone
 from django.db import migrations, models
+
 
 
 class Migration(migrations.Migration):
@@ -7,6 +9,8 @@ class Migration(migrations.Migration):
     dependencies = [
         ('store', '0013_review'),
     ]
+
+
 
     operations = [
         migrations.DeleteModel(
@@ -16,6 +20,7 @@ class Migration(migrations.Migration):
             name='Cart',
             fields=[
                 ('id', models.UUIDField(default=uuid.uuid4, primary_key=True, serialize=False)),
+                ('created_at', models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now)),
             ],
         ),
     ]
