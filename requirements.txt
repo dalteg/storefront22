@@ -78,6 +78,7 @@ six==1.17.0
 social-auth-app-django==5.7.0
 social-auth-core==4.8.5
 sqlparse==0.5.5
+stripe==12.1.0
 tornado==6.5.5
 tzdata==2025.3
 tzlocal==5.3.1
