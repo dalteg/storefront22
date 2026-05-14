@@ -44,3 +44,5 @@ MIDDLEWARE = [m for m in MIDDLEWARE if m not in [
     'debug_toolbar.middleware.DebugToolbarMiddleware',
     'silk.middleware.SilkyMiddleware',
 ]]
+
+CORS_ALLOW_ALL_ORIGINS = True
