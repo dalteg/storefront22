@@ -45,4 +45,7 @@ MIDDLEWARE = [m for m in MIDDLEWARE if m not in [
     'silk.middleware.SilkyMiddleware',
 ]]
 
-CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "https://storefront22-frontend.onrender.com",
+]
